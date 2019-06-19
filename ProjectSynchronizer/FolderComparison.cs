@@ -62,7 +62,7 @@ namespace ProjectSynchronizer
                     .Replace(dir2.FullName + Path.DirectorySeparatorChar, string.Empty))
                     .Distinct()
                     .ToArray()  // Get only distinct children file path/name
-                : null;
+                : new string[] { };
 
             // Find the set difference between the two folders
             // First check from folder1 to folder2, then check from folder2 to folder1

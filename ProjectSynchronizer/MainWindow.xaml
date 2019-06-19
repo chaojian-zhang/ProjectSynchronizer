@@ -128,12 +128,12 @@
                 <StackPanel>
                     <Label Content="Summary"/>
                     <TextBlock Text="{Binding SummaryText}"/>
+                    <DockPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                        <Label Content="Status: "/>
+                        <Label Content="{Binding StatusText}"/>
+                    </DockPanel>
                 </StackPanel>
             </Border>
         </StackPanel>
-        <DockPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
-            <Label Content="Status: "/>
-            <Label Content="{Binding StatusText}"/>
-        </DockPanel>
     </Grid>
 </Window>

@@ -117,14 +117,13 @@ namespace ProjectSynchronizer
         private void SyncCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             // Update
-            UpdateStatusText("Start Syncing...");
+            UpdateSummaryText("Start Syncing...");
 
             // Calculate change and do sync
-            int count = 0;
-            // ...
+            int count = CopyChangedFiles();
 
             // Update
-            UpdateStatusText($"Finished. {count} files moved from Source folders to Target folders.");
+            UpdateSummaryText($"Finished. {count} files moved from Source folders to Target folders.");
         }
         private void CheckCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -191,22 +190,59 @@ namespace ProjectSynchronizer
 
                 // Compare existence
                 if(!Directory.Exists(fullPath1))
-                    builder.Append($"Source path '{fullPath1}' doesn't exist." + Environment.NewLine);
+                    builder.Append($"<<< Source path '{fullPath1}' doesn't exist." + Environment.NewLine);
                 else if (!Directory.Exists(fullPath2))
-                    builder.Append($"Target path '{fullPath2}' doesn't exist." + Environment.NewLine);
+                    builder.Append($">>> Target path '{fullPath2}' doesn't exist." + Environment.NewLine);
                 else
                 {
                     // Compare contents
                     FolderComparisonResult result = comparer.Compare(fullPath1, fullPath2);
                     if (result.IdenticalFileSequence)
-                        builder.Append($"{folderName}: No change." + Environment.NewLine);
+                        builder.Append($"* {folderName}: No change." + Environment.NewLine);
                     else
-                        builder.Append($"{folderName}: {result.CommonFiles.Length} common files" +
-                            $"{(result.SourceExtra.Length > 0 ? $"; {result.SourceExtra.Length} new ({string.Join(", ", result.SourceExtra)})" : string.Empty)}" +
-                            $"{(result.TargetExtra.Length > 0 ? $"; {result.TargetExtra.Length} unexpected({string.Join(", ", result.TargetExtra)})" : string.Empty)}" + Environment.NewLine);
+                        builder.Append($"* {folderName}" +
+                            $"\n\t({result.CommonFiles.Length} common files)" +
+                            $"{(result.SourceExtra.Length > 0 ? $"\n\t{result.SourceExtra.Length} new: {string.Join(", ", result.SourceExtra)}" : string.Empty)}" +
+                            $"{(result.TargetExtra.Length > 0 ? $"\n\t{result.TargetExtra.Length} unexpected: {string.Join(", ", result.TargetExtra)}" : string.Empty)}" + Environment.NewLine);
                 }
             }
             return builder.ToString();
+        }
+        /// <summary>
+        /// Copy changed files from source path to target path; Return file count;
+        /// Notice only changes from source is updated; For update changes from target, Swap first
+        /// </summary>
+        private int CopyChangedFiles()
+        {
+            FolderComparison comparer = new FolderComparison();
+            int count = 0;
+            foreach (string folderName in Configurations.FolderNameList)
+            {
+                string fullPath1 = System.IO.Path.Combine(SourcePath, folderName);
+                string fullPath2 = System.IO.Path.Combine(TargetPath, folderName);
+
+                // Skip non-existence
+                if (!Directory.Exists(fullPath1))
+                    continue;
+                else if (!Directory.Exists(fullPath2))
+                    continue;
+                else
+                {
+                    // Compare contents
+                    FolderComparisonResult result = comparer.Compare(fullPath1, fullPath2);
+                    if (result.IdenticalFileSequence)
+                        continue;
+                    else
+                    {
+                        foreach (string item in result.SourceExtra)
+                        {
+                            File.Copy(System.IO.Path.Combine(fullPath1, item), System.IO.Path.Combine(fullPath2, item));
+                            count++;
+                        }
+                    }
+                }
+            }
+            return count;
         }
         private void UpdateStatusText(string text)
             => StatusText = text;
