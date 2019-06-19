@@ -1,0 +1,139 @@
+﻿<Window x:Class="ProjectSynchronizer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProjectSynchronizer"
+        mc:Ignorable="d"
+        Title="Synchronizer" MinHeight="450" MinWidth="800" BorderThickness="4" SizeToContent="WidthAndHeight"
+        BorderBrush="{StaticResource base02}" Background="{StaticResource base03}"
+        DataContext="{Binding RelativeSource={RelativeSource self}}" 
+        MouseDown="Window_MouseDown" WindowStyle="None" Closing="Window_Closing">
+    <Window.CommandBindings>
+        <CommandBinding Command="Close" Executed="ExitCommand_Executed" CanExecute="ExitCommand_CanExecute"/>
+        <CommandBinding Command="Replace" Executed="SwapCommand_Executed" CanExecute="SwapCommand_CanExecute"/>
+        <CommandBinding Command="New" Executed="SyncCommand_Executed" CanExecute="SyncCommand_CanExecute"/>
+        <CommandBinding Command="PrintPreview" Executed="CheckCommand_Executed" CanExecute="SyncCommand_CanExecute"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="Close"/>
+        <KeyBinding Key="F2" Command="Replace"/>
+        <KeyBinding Key="F5" Command="PrintPreview"/>
+    </Window.InputBindings>
+    <Window.Resources>
+        <Style TargetType="Label">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource base00}"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource base0}"/>
+            <Setter Property="Background" Value="{StaticResource base03}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource base01}"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource base0}"/>
+            <Setter Property="Background" Value="{StaticResource base03}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource base01}"/>
+            <!-- Disabled State Colors Override -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border CornerRadius="2" BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="{StaticResource base00}"/>
+                    <Setter Property="Foreground" Value="{StaticResource base01}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource base2}"/>
+                    <Setter Property="Foreground" Value="{StaticResource base0}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Border">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{StaticResource base02}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource base01}"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource base0}"/>
+            <Setter Property="Background" Value="{StaticResource base03}"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <StackPanel>
+            <Border>
+                <StackPanel>
+                    <DockPanel>
+                        <Label Content="Sync Folder Names"/>
+                        <Button Content="❌" HorizontalAlignment="Right" Width="34" Command="Close"/>
+                    </DockPanel>
+                    <TextBox Text="{Binding FolderNameList}" MinHeight="250" AcceptsReturn="True"/>
+                </StackPanel>
+            </Border>
+            <Border>
+                <DockPanel>
+                    <Button DockPanel.Dock="Bottom" Content="Sync↷" Command="New"/>
+                    <Button DockPanel.Dock="Bottom" Content="Check⟲ (F5)" Command="PrintPreview"/>
+                    <Button DockPanel.Dock="Bottom" Content="Swap⇄ (F2)" Command="Replace"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <DockPanel Grid.Column="0">
+                            <Label Content="Source"/>
+                            <TextBox Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                        <DockPanel Grid.Column="1">
+                            <Label Content="Target"/>
+                            <TextBox Text="{Binding TargetPath, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                    </Grid>
+                </DockPanel>
+            </Border>
+            <Border>
+                <StackPanel>
+                    <Label Content="Summary"/>
+                    <TextBlock Text="{Binding SummaryText}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+        <DockPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
+            <Label Content="Status: "/>
+            <Label Content="{Binding StatusText}"/>
+        </DockPanel>
+    </Grid>
+</Window>
