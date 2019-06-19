@@ -29,7 +29,7 @@ namespace ProjectSynchronizer
 
     public class FolderComparison
     {
-        public FolderComparisonResult Compare(string folder1, string folder2)
+        public FolderComparisonResult Compare(string folder1, string folder2, bool ignoreGit = true)
         {
             DirectoryInfo dir1 = new DirectoryInfo(folder1);
             DirectoryInfo dir2 = new DirectoryInfo(folder2);
@@ -38,6 +38,12 @@ namespace ProjectSynchronizer
             // Take a snapshot of the file system.  
             IEnumerable<FileInfo> list1 = dir1.GetFiles("*.*", SearchOption.AllDirectories);
             IEnumerable<FileInfo> list2 = dir2.GetFiles("*.*", SearchOption.AllDirectories);
+            // Ignore .git etc.
+            if (ignoreGit)
+            {
+                list1 = list1.Where(f => !f.FullName.Contains(Path.Combine(folder1, ".git")));
+                list2 = list2.Where(f => !f.FullName.Contains(Path.Combine(folder2, ".git")));
+            }
 
             // Initialize custom file comparer
             FileCompare myFileCompare = new FileCompare();
@@ -52,8 +58,8 @@ namespace ProjectSynchronizer
             IEnumerable<FileInfo> queryCommonFiles = list1.Intersect(list2, myFileCompare);
             result.CommonFiles = queryCommonFiles.Count() > 0
                 ? queryCommonFiles.Select(f => f.FullName
-                    .Replace(dir1.FullName, string.Empty)
-                    .Replace(dir2.FullName, string.Empty))
+                    .Replace(dir1.FullName + Path.DirectorySeparatorChar, string.Empty)
+                    .Replace(dir2.FullName + Path.DirectorySeparatorChar, string.Empty))
                     .Distinct()
                     .ToArray()  // Get only distinct children file path/name
                 : null;
@@ -65,8 +71,8 @@ namespace ProjectSynchronizer
             IEnumerable<FileInfo> queryList2Only = (from file in list2
                                                     select file).Except(list1, myFileCompare);
             // Set, and trimp to children file path/name
-            result.SourceExtra = queryList1Only.Select(f => f.FullName.Replace(dir1.FullName, string.Empty)).ToArray();
-            result.TargetExtra = queryList2Only.Select(f => f.FullName.Replace(dir2.FullName, string.Empty)).ToArray();
+            result.SourceExtra = queryList1Only.Select(f => f.FullName.Replace(dir1.FullName + Path.DirectorySeparatorChar, string.Empty)).ToArray();
+            result.TargetExtra = queryList2Only.Select(f => f.FullName.Replace(dir2.FullName + Path.DirectorySeparatorChar, string.Empty)).ToArray();
 
             // Return
             return result;

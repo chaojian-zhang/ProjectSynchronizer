@@ -155,7 +155,7 @@ namespace ProjectSynchronizer
                     IEnumerable<string> nonExisting = Configurations.FolderNameList
                         .Where(f => !Directory.Exists(
                             System.IO.Path.Combine(SourcePath, f)));
-                    UpdateStatusText($"{string.Join(", ", nonExisting)} doesn't exist in target.");
+                    UpdateStatusText($"{string.Join(", ", nonExisting)} doesn't exist in source.");
                 }                
             }
             else
@@ -201,9 +201,9 @@ namespace ProjectSynchronizer
                     if (result.IdenticalFileSequence)
                         builder.Append($"{folderName}: No change." + Environment.NewLine);
                     else
-                        builder.Append($"{folderName}: {result.CommonFiles.Length} common files; " +
-                            $"{result.SourceExtra.Length} new; " +
-                            $"{result.TargetExtra.Length} unexpected" + Environment.NewLine);
+                        builder.Append($"{folderName}: {result.CommonFiles.Length} common files" +
+                            $"{(result.SourceExtra.Length > 0 ? $"; {result.SourceExtra.Length} new ({string.Join(", ", result.SourceExtra)})" : string.Empty)}" +
+                            $"{(result.TargetExtra.Length > 0 ? $"; {result.TargetExtra.Length} unexpected({string.Join(", ", result.TargetExtra)})" : string.Empty)}" + Environment.NewLine);
                 }
             }
             return builder.ToString();
