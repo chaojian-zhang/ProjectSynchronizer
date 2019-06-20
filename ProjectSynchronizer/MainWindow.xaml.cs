@@ -1,4 +1,8 @@
-﻿using System;
+﻿/* To-Do:
+ * * Add button to create missing folders
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -210,7 +214,10 @@ namespace ProjectSynchronizer
         }
         /// <summary>
         /// Copy changed files from source path to target path; Return file count;
-        /// Notice only changes from source is updated; For update changes from target, Swap first
+        /// Notice only changes from source is updated; For update changes from target, Swap first.
+        /// 
+        /// Notice file comparison is by content not by modification date;
+        /// Existing files are overwritten.
         /// </summary>
         private int CopyChangedFiles()
         {
@@ -236,7 +243,7 @@ namespace ProjectSynchronizer
                     {
                         foreach (string item in result.SourceExtra)
                         {
-                            File.Copy(System.IO.Path.Combine(fullPath1, item), System.IO.Path.Combine(fullPath2, item));
+                            File.Copy(System.IO.Path.Combine(fullPath1, item), System.IO.Path.Combine(fullPath2, item), true);
                             count++;
                         }
                     }
