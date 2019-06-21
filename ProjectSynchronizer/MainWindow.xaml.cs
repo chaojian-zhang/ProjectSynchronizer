@@ -1,5 +1,9 @@
 ﻿/* To-Do:
  * * Add button to create missing folders
+ * * Project management side panel is not updating text automatically though it's strange because why not? An notification with same name is called, unless it is class specific
+ * * Check seems not working
+ * * We need better ways to manage project names and file saving and laoding
+ * * We need to be able to create new project yamls
  */
 
 using System;
@@ -32,65 +36,113 @@ namespace ProjectSynchronizer
         #region Constructor
         public MainWindow()
         {
-            // Load configuration
-            if (!File.Exists(ConfigurationFileName))
-                File.WriteAllText(ConfigurationFileName, new Serializer().Serialize(
-                    new Configurations()
-                    {
-                        FolderNameList = new string[] { },
-                        SourcePath = string.Empty,
-                        TargetPath = string.Empty,
-                        SummaryText = string.Empty,
-                        StatusText = "Ready."
-                    }));
-
-            string yaml = File.ReadAllText(ConfigurationFileName);
-            Configurations = new Deserializer().Deserialize<Configurations>(yaml);
+            // Load projects
+            Projects = new ObservableCollection<Configurations>();
+            foreach (string file in Directory.EnumerateFiles(AppDomain.CurrentDomain.BaseDirectory))
+            {
+                if (System.IO.Path.GetExtension(file).ToLower() != ".yaml")
+                    continue;
+                string yaml = File.ReadAllText(file);
+                Configurations project = new Deserializer().Deserialize<Configurations>(yaml);
+                if (project.Status == ConfigurationStatus.Current)
+                    CurrentProject = project;
+                Projects.Add(project);
+                // Don't delete the file (Dangerous! Especially during debug we might just STOP the execution)
+            }
+            if (CurrentProject == null)
+            {
+                CurrentProject = new Configurations()
+                {
+                    ProjectName = "Default",
+                    FolderNameList = new string[] { },
+                    SourcePath = string.Empty,
+                    TargetPath = string.Empty,
+                    SummaryText = string.Empty,
+                    StatusText = "Ready."
+                };
+                File.WriteAllText("Default.yaml", new Serializer().Serialize(CurrentProject));
+                Projects.Add(CurrentProject);
+            }
 
             // Initialize view
             InitializeComponent();
         }
-        private const string ConfigurationFileName = "Configurations.yaml";
         #endregion
 
         #region View Properties
-        private Configurations Configurations;
+        private Configurations _CurrentProject;
+        private ObservableCollection<Configurations> _Projects;
+        public Configurations CurrentProject
+        {
+            get => _CurrentProject;
+            set
+            {
+                SetField(ref _CurrentProject, value);
+                NotifyPropertyChanged(nameof(FolderNameList));
+                NotifyPropertyChanged(nameof(SourcePath));
+                NotifyPropertyChanged(nameof(TargetPath));
+                NotifyPropertyChanged(nameof(SummaryText));
+                NotifyPropertyChanged(nameof(StatusText));
+                NotifyPropertyChanged(nameof(ProjectName));
+            }
+        }
+        public string ProjectName
+        {
+            get => CurrentProject.ProjectName;
+            set => CurrentProject.ProjectName = SetProperty(CurrentProject.ProjectName, value);
+        }
         public string FolderNameList
         {
-            get => string.Join(Environment.NewLine, Configurations.FolderNameList);
-            set => SetField(ref Configurations.FolderNameList, value.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+            get => string.Join(Environment.NewLine, CurrentProject.FolderNameList);
+            set => CurrentProject.FolderNameList = SetProperty(CurrentProject.FolderNameList, value.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
         }
         public string SourcePath
         {
-            get => Configurations.SourcePath;
-            set => SetField(ref Configurations.SourcePath, value);
+            get => CurrentProject.SourcePath;
+            set => CurrentProject.SourcePath = SetProperty(CurrentProject.SourcePath, value);
         }
         public string TargetPath
         {
-            get => Configurations.TargetPath;
-            set => SetField(ref Configurations.TargetPath, value);
+            get => CurrentProject.TargetPath;
+            set => CurrentProject.TargetPath = SetProperty(CurrentProject.TargetPath, value);
         }
         public string SummaryText
         {
-            get => Configurations.SummaryText;
-            set => SetField(ref Configurations.SummaryText, value);
+            get => CurrentProject.SummaryText;
+            set => CurrentProject.SummaryText = SetProperty(CurrentProject.SummaryText, value);
         }
         public string StatusText
         {
-            get => Configurations.StatusText;
-            set => SetField(ref Configurations.StatusText, value);
+            get => CurrentProject.StatusText;
+            set => CurrentProject.StatusText = SetProperty(CurrentProject.StatusText, value);
+        }
+        public ObservableCollection<Configurations> Projects
+        {
+            get => _Projects;
+            set => SetField(ref _Projects, value);
         }
         #endregion
 
         #region Window Events
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
             => DragMove();
-
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            string yaml = new Serializer().Serialize(Configurations);
-            File.WriteAllText(ConfigurationFileName, yaml);
+            foreach (Configurations project in Projects)
+            {
+                if (project == CurrentProject)
+                    project.Status = ConfigurationStatus.Current;
+                else
+                    project.Status = ConfigurationStatus.None;
+
+                string yaml = new Serializer().Serialize(project);
+                File.WriteAllText(project.ProjectName.EscapeFilename() + ".yaml", yaml);
+            }
         }
+        private void GridSplitter_MouseDown(object sender, MouseButtonEventArgs e)
+            => ProjectPanel.Visibility = ProjectPanel.Visibility == Visibility.Visible
+                ? Visibility.Collapsed
+                : Visibility.Visible;
         #endregion
 
         #region Commands
@@ -107,7 +159,7 @@ namespace ProjectSynchronizer
             // Automatically check
             bool valid = Directory.Exists(SourcePath)
                 && Directory.Exists(TargetPath)
-                && Configurations.FolderNameList.Where(f => !Directory.Exists(
+                && CurrentProject.FolderNameList.Where(f => !Directory.Exists(
                     System.IO.Path.Combine(SourcePath, f))).Count() == 0
                 && !string.IsNullOrWhiteSpace(FolderNameList);
             if(valid)
@@ -142,7 +194,7 @@ namespace ProjectSynchronizer
             // Can execute state
             e.CanExecute = Directory.Exists(SourcePath)
                 && Directory.Exists(TargetPath)
-                && Configurations.FolderNameList.Where(f => !Directory.Exists(
+                && CurrentProject.FolderNameList.Where(f => !Directory.Exists(
                     System.IO.Path.Combine(SourcePath, f))).Count() == 0
                 && !string.IsNullOrWhiteSpace(FolderNameList);
 
@@ -155,7 +207,7 @@ namespace ProjectSynchronizer
                     UpdateStatusText($"Target Path '{TargetPath}' doesn't exist.");
                 else
                 {
-                    IEnumerable<string> nonExisting = Configurations.FolderNameList
+                    IEnumerable<string> nonExisting = CurrentProject.FolderNameList
                         .Where(f => !Directory.Exists(
                             System.IO.Path.Combine(SourcePath, f)));
                     UpdateStatusText($"{string.Join(", ", nonExisting)} doesn't exist in source.");
@@ -177,6 +229,12 @@ namespace ProjectSynchronizer
             NotifyPropertyChanged(propertyName);
             return true;
         }
+        public type SetProperty<type>(type property, type value, [CallerMemberName]string propertyName = null)
+        {
+            if (EqualityComparer<type>.Default.Equals(property, value)) return property;
+            NotifyPropertyChanged(propertyName);
+            return value;
+        }
         #endregion
 
         #region Sub-Routines
@@ -187,7 +245,7 @@ namespace ProjectSynchronizer
         {
             FolderComparison comparer = new FolderComparison();
             StringBuilder builder = new StringBuilder();
-            foreach (string folderName in Configurations.FolderNameList)
+            foreach (string folderName in CurrentProject.FolderNameList)
             {
                 string fullPath1 = System.IO.Path.Combine(SourcePath, folderName);
                 string fullPath2 = System.IO.Path.Combine(TargetPath, folderName);
@@ -223,7 +281,7 @@ namespace ProjectSynchronizer
         {
             FolderComparison comparer = new FolderComparison();
             int count = 0;
-            foreach (string folderName in Configurations.FolderNameList)
+            foreach (string folderName in CurrentProject.FolderNameList)
             {
                 string fullPath1 = System.IO.Path.Combine(SourcePath, folderName);
                 string fullPath2 = System.IO.Path.Combine(TargetPath, folderName);

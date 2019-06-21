@@ -91,15 +91,111 @@
             <Setter Property="Foreground" Value="{StaticResource base0}"/>
             <Setter Property="Background" Value="{StaticResource base03}"/>
         </Style>
+        <Style TargetType="ListView">
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="MinWidth" Value="200"/>
+        </Style>
+        <Style TargetType="ListViewItem">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border CornerRadius="2" BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" 
+                                Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" 
+                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}" >
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                HorizontalAlignment="Stretch" 
+                                VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <!-- Color for hover selection -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True" />
+                        <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="{StaticResource base03}"/>
+                    <Setter Property="Background" Value="{StaticResource base01}" />
+                </MultiTrigger>
+                <!-- Color for selected -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="{StaticResource base01}"/>
+                    <Setter Property="Background" Value="{StaticResource base02}" />
+                </MultiTrigger>
+                <!-- Color for hovering -->
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="{StaticResource base1}"/>
+                    <Setter Property="Background" Value="{StaticResource base03}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="GridSplitter">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GridSplitter}">
+                        <Grid>
+                            <Button Content="⁞" />
+                            <Rectangle Fill="{StaticResource base00}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Grid>
-        <StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="7*"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" x:Name="ProjectPanel">
+            <DockPanel>
+                <Label DockPanel.Dock="Top" Content="Projects"/>
+                <ListView SelectedItem="{Binding CurrentProject}" ItemsSource="{Binding Projects}" SelectionMode="Single">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding ProjectName}"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </DockPanel>
+        </Border>
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                      ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+                      MouseDown="GridSplitter_MouseDown"/>
+        <StackPanel Grid.Column="2">
+            <Border>
+                <DockPanel>
+                    <Label Content="Project Name"/>
+                    <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Width="250"/>
+                    <Button Content="❌" HorizontalAlignment="Right" Width="34" Command="Close"/>
+                </DockPanel>
+            </Border>
             <Border>
                 <StackPanel>
-                    <DockPanel>
-                        <Label Content="Sync Folder Names"/>
-                        <Button Content="❌" HorizontalAlignment="Right" Width="34" Command="Close"/>
-                    </DockPanel>
+                    <Label Content="Sync Folder Names"/>
                     <TextBox Text="{Binding FolderNameList}" MinHeight="250" AcceptsReturn="True"/>
                 </StackPanel>
             </Border>
