@@ -223,7 +223,7 @@
             <Border>
                 <StackPanel>
                     <Label Content="Summary"/>
-                    <TextBlock Text="{Binding SummaryText}"/>
+                    <TextBox Text="{Binding SummaryText}" IsReadOnly="True" MaxHeight="760"/>
                     <DockPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
                         <Label Content="Status: "/>
                         <Label Content="{Binding StatusText}"/>

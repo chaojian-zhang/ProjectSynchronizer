@@ -4,6 +4,8 @@
  * * Check seems not working
  * * We need better ways to manage project names and file saving and laoding
  * * We need to be able to create new project yamls
+ * * [Bug] OnPropertyChanged when for SummaryText only the first call during an event handling is issued, later calls are not working
+ * * [Bug] During synchronization source and target folder are wrong! (The same effect can be observed during swapping)
  */
 
 using System;
@@ -53,6 +55,7 @@ namespace ProjectSynchronizer
             {
                 CurrentProject = new Configurations()
                 {
+                    OldFileName = "Default.yaml",
                     ProjectName = "Default",
                     FolderNameList = new string[] { },
                     SourcePath = string.Empty,
@@ -135,8 +138,18 @@ namespace ProjectSynchronizer
                 else
                     project.Status = ConfigurationStatus.None;
 
+                // Delete old file
+                File.Delete(project.OldFileName);
+                // Save new file
+                string newFileName = project.ProjectName.EscapeFilename() + ".yaml";
+                // Filename conflict resolution
+                if (File.Exists(newFileName))
+                    newFileName += project.ProjectName.EscapeFilename() 
+                        + DateTime.Now.ToLongTimeString().Replace(':', '_')
+                        + ".yaml";
+                project.OldFileName = newFileName;
                 string yaml = new Serializer().Serialize(project);
-                File.WriteAllText(project.ProjectName.EscapeFilename() + ".yaml", yaml);
+                File.WriteAllText(newFileName, yaml);
             }
         }
         private void GridSplitter_MouseDown(object sender, MouseButtonEventArgs e)
@@ -184,7 +197,8 @@ namespace ProjectSynchronizer
         private void CheckCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             // Summary Update
-            UpdateSummaryText(DetectChangeLog());
+            string change = DetectChangeLog();
+            UpdateSummaryText(change);
 
             // Label Update
             UpdateStatusText("Click Sync to sync changed files from Source to Target; Use F2 to swap Source/Target.");
@@ -244,7 +258,7 @@ namespace ProjectSynchronizer
         private string DetectChangeLog()
         {
             FolderComparison comparer = new FolderComparison();
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder($"Source: {SourcePath};\nTarget: {TargetPath}.\n");
             foreach (string folderName in CurrentProject.FolderNameList)
             {
                 string fullPath1 = System.IO.Path.Combine(SourcePath, folderName);

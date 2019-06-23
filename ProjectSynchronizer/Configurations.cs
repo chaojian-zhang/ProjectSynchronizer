@@ -13,6 +13,7 @@ namespace ProjectSynchronizer
     }
     public class Configurations
     {
+        public string OldFileName { get; set; }
         public string ProjectName { get; set; }
         public ConfigurationStatus Status { get; set; }
         public string[] FolderNameList { get; set; }
