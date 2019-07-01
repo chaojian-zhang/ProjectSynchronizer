@@ -266,20 +266,20 @@ namespace ProjectSynchronizer
 
                 // Compare existence
                 if(!Directory.Exists(fullPath1))
-                    builder.Append($"<<< Source path '{fullPath1}' doesn't exist." + Environment.NewLine);
+                    builder.Append($"<<< Source path '{fullPath1}' doesn't exist.\n");
                 else if (!Directory.Exists(fullPath2))
-                    builder.Append($">>> Target path '{fullPath2}' doesn't exist." + Environment.NewLine);
+                    builder.Append($">>> Target path '{fullPath2}' doesn't exist.\n");
                 else
                 {
                     // Compare contents
                     FolderComparisonResult result = comparer.Compare(fullPath1, fullPath2);
                     if (result.IdenticalFileSequence)
-                        builder.Append($"* {folderName}: No change." + Environment.NewLine);
+                        builder.Append($"* {folderName}: No change.\n");
                     else
                         builder.Append($"* {folderName}" +
                             $"\n\t({result.CommonFiles.Length} common files)" +
                             $"{(result.SourceExtra.Length > 0 ? $"\n\t{result.SourceExtra.Length} new: {string.Join(", ", result.SourceExtra)}" : string.Empty)}" +
-                            $"{(result.TargetExtra.Length > 0 ? $"\n\t{result.TargetExtra.Length} unexpected: {string.Join(", ", result.TargetExtra)}" : string.Empty)}" + Environment.NewLine);
+                            $"{(result.TargetExtra.Length > 0 ? $"\n\t{result.TargetExtra.Length} unexpected: {string.Join(", ", result.TargetExtra)}" : string.Empty)}\n");
                 }
             }
             return builder.ToString();
