@@ -4,7 +4,6 @@
  * * Check seems not working
  * * We need better ways to manage project names and file saving and laoding
  * * We need to be able to create new project yamls
- * * [Bug] During synchronization source and target folder are wrong! (The same effect can be observed during swapping)
  */
 
 using System;
