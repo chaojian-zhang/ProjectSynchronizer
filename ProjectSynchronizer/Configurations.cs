@@ -14,7 +14,7 @@ namespace ProjectSynchronizer
     public class Configurations
     {
         public string OldFileName;
-        public string ProjectName;
+        public string ProjectName { get; set; }
         public ConfigurationStatus Status;
         public string[] FolderNameList;
         public string SourcePath;

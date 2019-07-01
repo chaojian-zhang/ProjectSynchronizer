@@ -90,7 +90,12 @@ namespace ProjectSynchronizer
         public string ProjectName
         {
             get => CurrentProject.ProjectName;
-            set => SetField(ref CurrentProject.ProjectName, value);
+            set
+            {
+                if (EqualityComparer<string>.Default.Equals(CurrentProject.ProjectName, value)) return;
+                CurrentProject.ProjectName = value;
+                NotifyPropertyChanged();
+            }
         }
         public string FolderNameList
         {
