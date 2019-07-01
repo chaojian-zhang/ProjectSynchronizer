@@ -246,7 +246,7 @@ namespace ProjectSynchronizer
         private string DetectChangeLog()
         {
             FolderComparison comparer = new FolderComparison();
-            StringBuilder builder = new StringBuilder($"Source: {SourcePath};\nTarget: {TargetPath}.\n");
+            StringBuilder builder = new StringBuilder($"Source: {SourcePath}\nTarget: {TargetPath}\n");
             foreach (string folderName in CurrentProject.FolderNameList)
             {
                 string fullPath1 = System.IO.Path.Combine(SourcePath, folderName);
