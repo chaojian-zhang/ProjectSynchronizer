@@ -51,17 +51,7 @@ namespace ProjectSynchronizer
             }
             if (CurrentProject == null)
             {
-                CurrentProject = new Configurations()
-                {
-                    OldFileName = "Default.yaml",
-                    ProjectName = "Default",
-                    FolderNameList = new string[] { },
-                    SourcePath = string.Empty,
-                    TargetPath = string.Empty,
-                    SummaryText = string.Empty,
-                    StatusText = "Ready."
-                };
-                File.WriteAllText("Default.yaml", new Serializer().Serialize(CurrentProject));
+                CurrentProject = CreateNewProject("Default");
                 Projects.Add(CurrentProject);
             }
 
@@ -142,17 +132,11 @@ namespace ProjectSynchronizer
                     project.Status = ConfigurationStatus.None;
 
                 // Delete old file
-                File.Delete(project.OldFileName);
-                // Save new file
-                string newFileName = project.ProjectName.EscapeFilename() + ".yaml";
-                // Filename conflict resolution
-                if (File.Exists(newFileName))
-                    newFileName += project.ProjectName.EscapeFilename() 
-                        + DateTime.Now.ToLongTimeString().Replace(':', '_')
-                        + ".yaml";
-                project.OldFileName = newFileName;
-                string yaml = new Serializer().Serialize(project);
-                File.WriteAllText(newFileName, yaml);
+                File.Delete(project.FileName);
+                // Save a new file
+                Configurations newProject = CreateNewProject(project.ProjectName, project);
+                // Replace file name
+                project.FileName = newProject.FileName;
             }
         }
         private void GridSplitter_MouseDown(object sender, MouseButtonEventArgs e)
@@ -233,6 +217,13 @@ namespace ProjectSynchronizer
             else
                 UpdateStatusText("Click Check to detect changes.");
         }
+        private void NewProjectCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Configurations project = CreateNewProject("New Project");
+            Projects.Add(project);
+        }
+        private void NewProjectCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+            => e.CanExecute = true;
         #endregion
 
         #region Data Binding Interface
@@ -324,6 +315,33 @@ namespace ProjectSynchronizer
             => StatusText = text;
         private void UpdateSummaryText(string text)
             => SummaryText = text;
+        /// <summary>
+        /// Create a new project with give name; Generate filename and assign project name.
+        /// If an existing project is passed in other parameters will be initialized using that one; Existing project won't be changed
+        /// </summary>
+        private Configurations CreateNewProject(string projectName, Configurations existing = null)
+        {
+            string fileName = projectName.EscapeFilename() + ".yaml";
+            // Filename conflict resolution
+            if (File.Exists(fileName))
+                fileName += projectName.EscapeFilename()
+                    + DateTime.Now.ToLongTimeString().Replace(':', '_')
+                    + ".yaml";
+
+            Configurations configuration = new Configurations()
+            {
+                FileName = fileName,
+                ProjectName = projectName,
+                FolderNameList = existing?.FolderNameList ?? new string[] { },
+                SourcePath = existing?.SourcePath ?? string.Empty,
+                TargetPath = existing?.TargetPath ?? string.Empty,
+                SummaryText = existing?.SummaryText ?? string.Empty,
+                StatusText = existing?.StatusText ?? "Ready."
+            };
+            string yaml = new Serializer().Serialize(configuration);
+            File.WriteAllText(configuration.FileName, yaml);
+            return configuration;
+        }
         #endregion
     }
 }

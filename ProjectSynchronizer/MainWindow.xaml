@@ -12,8 +12,9 @@
     <Window.CommandBindings>
         <CommandBinding Command="Close" Executed="ExitCommand_Executed" CanExecute="ExitCommand_CanExecute"/>
         <CommandBinding Command="Replace" Executed="SwapCommand_Executed" CanExecute="SwapCommand_CanExecute"/>
-        <CommandBinding Command="New" Executed="SyncCommand_Executed" CanExecute="SyncCommand_CanExecute"/>
+        <CommandBinding Command="Copy" Executed="SyncCommand_Executed" CanExecute="SyncCommand_CanExecute"/>
         <CommandBinding Command="PrintPreview" Executed="CheckCommand_Executed" CanExecute="SyncCommand_CanExecute"/>
+        <CommandBinding Command="New" Executed="NewProjectCommand_Executed" CanExecute="NewProjectCommand_CanExecute"/>
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="Esc" Command="Close"/>
@@ -173,6 +174,7 @@
         <Border Grid.Column="0" x:Name="ProjectPanel">
             <DockPanel>
                 <Label DockPanel.Dock="Top" Content="Projects"/>
+                <Button DockPanel.Dock="Bottom" Content="New" Command="New"/>
                 <ListView SelectedItem="{Binding CurrentProject}" ItemsSource="{Binding Projects}" SelectionMode="Single">
                     <ListView.ItemTemplate>
                         <DataTemplate>
@@ -201,7 +203,7 @@
             </Border>
             <Border>
                 <DockPanel>
-                    <Button DockPanel.Dock="Bottom" Content="Sync↷" Command="New"/>
+                    <Button DockPanel.Dock="Bottom" Content="Sync↷" Command="Copy"/>
                     <Button DockPanel.Dock="Bottom" Content="Check⟲ (F5)" Command="PrintPreview"/>
                     <Button DockPanel.Dock="Bottom" Content="Swap⇄ (F2)" Command="Replace"/>
                     <Grid>
