@@ -4,7 +4,6 @@
  * * Check seems not working
  * * We need better ways to manage project names and file saving and laoding
  * * We need to be able to create new project yamls
- * * [Bug] OnPropertyChanged when for SummaryText only the first call during an event handling is issued, later calls are not working
  * * [Bug] During synchronization source and target folder are wrong! (The same effect can be observed during swapping)
  */
 
@@ -92,32 +91,32 @@ namespace ProjectSynchronizer
         public string ProjectName
         {
             get => CurrentProject.ProjectName;
-            set => CurrentProject.ProjectName = SetProperty(CurrentProject.ProjectName, value);
+            set => SetField(ref CurrentProject.ProjectName, value);
         }
         public string FolderNameList
         {
             get => string.Join(Environment.NewLine, CurrentProject.FolderNameList);
-            set => CurrentProject.FolderNameList = SetProperty(CurrentProject.FolderNameList, value.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+            set => SetField(ref CurrentProject.FolderNameList, value.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
         }
         public string SourcePath
         {
             get => CurrentProject.SourcePath;
-            set => CurrentProject.SourcePath = SetProperty(CurrentProject.SourcePath, value);
+            set => SetField(ref CurrentProject.SourcePath, value);
         }
         public string TargetPath
         {
             get => CurrentProject.TargetPath;
-            set => CurrentProject.TargetPath = SetProperty(CurrentProject.TargetPath, value);
+            set => SetField(ref CurrentProject.TargetPath, value);
         }
         public string SummaryText
         {
             get => CurrentProject.SummaryText;
-            set => CurrentProject.SummaryText = SetProperty(CurrentProject.SummaryText, value);
+            set => SetField(ref CurrentProject.SummaryText, value);
         }
         public string StatusText
         {
             get => CurrentProject.StatusText;
-            set => CurrentProject.StatusText = SetProperty(CurrentProject.StatusText, value);
+            set => SetField(ref CurrentProject.StatusText, value);
         }
         public ObservableCollection<Configurations> Projects
         {
@@ -242,12 +241,6 @@ namespace ProjectSynchronizer
             field = value;
             NotifyPropertyChanged(propertyName);
             return true;
-        }
-        public type SetProperty<type>(type property, type value, [CallerMemberName]string propertyName = null)
-        {
-            if (EqualityComparer<type>.Default.Equals(property, value)) return property;
-            NotifyPropertyChanged(propertyName);
-            return value;
         }
         #endregion
 
