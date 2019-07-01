@@ -324,7 +324,8 @@ namespace ProjectSynchronizer
             string fileName = projectName.EscapeFilename() + ".yaml";
             // Filename conflict resolution
             if (File.Exists(fileName))
-                fileName += projectName.EscapeFilename()
+                fileName = projectName.EscapeFilename()
+                    + "_"
                     + DateTime.Now.ToLongTimeString().Replace(':', '_')
                     + ".yaml";
 
