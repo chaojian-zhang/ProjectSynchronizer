@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProjectSynchronizer"
         mc:Ignorable="d"
-        Title="Synchronizer" MinHeight="450" MinWidth="800" BorderThickness="4" SizeToContent="WidthAndHeight"
+        Title="Synchronizer" MinHeight="450" MinWidth="800" BorderThickness="4" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
         BorderBrush="{StaticResource base02}" Background="{StaticResource base03}"
         DataContext="{Binding RelativeSource={RelativeSource self}}" 
         MouseDown="Window_MouseDown" WindowStyle="None" Closing="Window_Closing">
